@@ -411,6 +411,9 @@ resource "aws_instance" "jenkins_instance" {
           dnf config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
           dnf install -y terraform
 
+          # Helm 설치
+          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
           # Hostname을 jenkins로 변경
           hostnamectl set-hostname jenkins
   EOF
