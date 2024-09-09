@@ -93,8 +93,6 @@ resource "aws_lb_listener" "example_listener" {
   protocol          = "HTTP"
   default_action {
     type = "forward"
-    # Kubernetes에서 LoadBalancer를 설정할 때 타겟 그룹을 자동으로 생성하고 관리함.
-    target_group_arn = "<AUTOMATICALLY HANDLED BY KUBERNETES>"
   }
 }
 
