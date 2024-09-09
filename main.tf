@@ -429,6 +429,17 @@ resource "aws_instance" "jenkins_instance" {
           # Helm 설치
           curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
+          # AWS CLI 설치
+          dnf install -y awscli
+          
+          # kubectl 설치
+          curl -o /usr/local/bin/kubectl "https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.0/2023-08-04/bin/linux/amd64/kubectl"
+          chmod +x /usr/local/bin/kubectl
+          
+          # eksctl 설치
+          curl -o /usr/local/bin/eksctl "https://github.com/weaveworks/eksctl/releases/download/v0.147.0/eksctl_Linux_amd64.tar.gz"
+          chmod +x /usr/local/bin/eksctl
+
           # Hostname을 jenkins로 변경
           hostnamectl set-hostname jenkins
   EOF
