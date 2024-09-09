@@ -86,6 +86,25 @@ resource "aws_lb" "example_alb" {
   }
 }
 
+# ALB 타겟 그룹 생성 (target_type을 'ip'로 설정하여 Pod IP를 대상으로 함)
+resource "aws_lb_target_group" "example_tg" {
+  name     = "mokonix-lee-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.eks_vpc.id
+  target_type = "ip"  # Pod IP를 대상으로 설정
+
+  health_check {
+    protocol = "HTTP"
+    path     = "/"
+    port     = "traffic-port"
+  }
+
+  tags = {
+    Name = "mokonix-lee-tg"
+  }
+}
+
 # ALB Listener 생성 (Kubernetes가 ALB의 타겟 그룹을 자동으로 관리함)
 resource "aws_lb_listener" "example_listener" {
   load_balancer_arn = aws_lb.example_alb.arn  # 위에서 생성한 ALB의 ARN
@@ -93,6 +112,7 @@ resource "aws_lb_listener" "example_listener" {
   protocol          = "HTTP"
   default_action {
     type = "forward"
+    target_group_arn = aws_lb_target_group.example_tg.arn
   }
 }
 
