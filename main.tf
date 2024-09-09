@@ -125,6 +125,13 @@ resource "aws_security_group" "alb_sg" {
   vpc_id = aws_vpc.eks_vpc.id
 
   ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  # SSH 트래픽을 모두 허용
+  }
+
+  ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
