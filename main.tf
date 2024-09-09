@@ -114,6 +114,10 @@ resource "aws_lb_listener" "example_listener" {
     type = "forward"
     target_group_arn = aws_lb_target_group.example_tg.arn
   }
+
+  lifecycle {
+    prevent_destroy = false # 삭제 방지 해제
+  }
 }
 
 # 보안 그룹 생성 (ALB용 + Jenkins)
