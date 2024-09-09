@@ -43,7 +43,7 @@ resource "aws_subnet" "public_subnet_a" {
   map_public_ip_on_launch = true
   tags = {
     Name                              = "mokonix-lee-public-subnet-a"
-    "kubernetes.io/role/elb"          = "1"          # ELB용 퍼블릭 서브텟 태그
+    "kubernetes.io/role/elb"          = "1"          # ELB용 퍼블릭 서브넷 태그
     "kubernetes.io/cluster/eks-cluster" = "shared"   # 클러스터 태그
   }
 }
@@ -86,36 +86,15 @@ resource "aws_lb" "example_alb" {
   }
 }
 
-# ALB Target Group 생성
-resource "aws_lb_target_group" "example_tg" {
-  name     = "mokonix-lee-tg"
-  port     = 80  # ALB가 트래픽을 전달할 포트 (HTTP 80번)
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.eks_vpc.id
-
-  health_check {
-    protocol = "HTTP"   # 헬스 체크용 프로토콜
-    path     = "/"      # 헬스 체크 경로 (루트 경로)
-    port     = "traffic-port"
-    interval = 30
-    timeout  = 5
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-  }
-
-  tags = {
-    Name = "mokonix-lee-tg"
-  }
-}
-
-# ALB Listener 생성 (ALB가 HTTP 트래픽을 받아서 타겟 그룹으로 전달)
+# ALB Listener 생성 (Kubernetes가 ALB의 타겟 그룹을 자동으로 관리함)
 resource "aws_lb_listener" "example_listener" {
   load_balancer_arn = aws_lb.example_alb.arn  # 위에서 생성한 ALB의 ARN
   port              = 80  # ALB의 HTTP 포트
   protocol          = "HTTP"
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.example_tg.arn  # 트래픽을 타겟 그룹으로 전달
+    type = "forward"
+    # Kubernetes에서 LoadBalancer를 설정할 때 타겟 그룹을 자동으로 생성하고 관리함.
+    target_group_arn = "<AUTOMATICALLY HANDLED BY KUBERNETES>"
   }
 }
 
@@ -269,13 +248,6 @@ resource "aws_security_group" "eks_security_group" {
   }
 }
 
-# 타겟 그룹의 대상 설정 (Pod IP를 등록)
-resource "aws_lb_target_group_attachment" "tg_attachment" {
-  target_group_arn = aws_lb_target_group.example_tg.arn  # 타겟 그룹 ARN
-  target_id        = "<POD_IP_ADDRESS>"  # Pod의 IP 주소
-  port             = 80  # 트래픽 전달할 포트
-}
-
 # EKS 클러스터 역할 생성
 resource "aws_iam_role" "eks_cluster_role" {
   name = "mokonix-lee-eks-cluster-role"
@@ -372,9 +344,9 @@ resource "aws_eks_node_group" "eks_node_group" {
   }
 
   tags = {
-    Name        = "chanwoo-node"
+    Name        = "mokonix-lee-node"
     Environment = "development"
-    Owner       = "chanwoo"
+    Owner       = "mokonix-lee"
   }
 }
 
@@ -429,10 +401,10 @@ resource "aws_instance" "jenkins_instance" {
 # Terraform Cloud 백엔드 설정
 terraform {
   backend "remote" {
-    organization = "songaji-or"
+    organization = "mokonix-lee-or"
 
     workspaces {
-      name = "terraform-eks"
+      name = "mokonix-lee-WANT_PIECE_Terraform"
     }
   }
 }
