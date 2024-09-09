@@ -104,10 +104,6 @@ resource "aws_lb_target_group" "mokonix_lee_tg" {
     prevent_destroy = false
   }
 
-  depends_on = [
-    aws_lb_listener.mokonix_lee_listener  # Listener가 먼저 삭제되도록 의존성 설정
-  ]
-
   tags = {
     Name = "mokonix-lee-tg"
   }
