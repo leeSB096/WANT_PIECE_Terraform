@@ -427,15 +427,27 @@ resource "aws_instance" "jenkins_instance" {
           dnf install -y terraform
 
           # Helm 설치
-          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+          # curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+          helm repo add eks https://aws.github.io/eks-charts
+          helm repo update
+
+          helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+          -n kube-system \
+          --set clusterName=mokonix-lee-cluster \
+          --set serviceAccount.create=true \
+          --set serviceAccount.name=aws-load-balancer-controller
 
           # AWS CLI 설치
           dnf install -y awscli
           
-          # kubectl 설치
-          curl -o /usr/local/bin/kubectl "https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.0/2023-08-04/bin/linux/amd64/kubectl"
+          # kubectl 설치 + 권한
+          curl -LO "https://dl.k8s.io/release/v1.27.0/bin/linux/amd64/kubectl"
+          mv kubectl /usr/local/bin/kubectl
           chmod +x /usr/local/bin/kubectl
-          
+
+          # kubeconfig 기본 리전, cluster 이름 지정
+          aws eks --region ap-northeast-2 update-kubeconfig --name mokonix-lee-cluster
+
           # eksctl 설치
           curl -o /usr/local/bin/eksctl "https://github.com/weaveworks/eksctl/releases/download/v0.147.0/eksctl_Linux_amd64.tar.gz"
           chmod +x /usr/local/bin/eksctl
