@@ -74,7 +74,7 @@ resource "aws_route_table_association" "public_subnet_c_association" {
 }
 
 # Application Load Balancer (ALB) 생성 (두 개의 퍼블릭 서브넷 사용)
-resource "aws_lb" "example_alb" {
+resource "aws_lb" "mokonix_lee_alb" {
   name               = "mokonix-lee-alb"
   internal           = false # 외부에 노출되도록 설정
   load_balancer_type = "application"
@@ -87,7 +87,7 @@ resource "aws_lb" "example_alb" {
 }
 
 # ALB 타겟 그룹 생성 (target_type을 'ip'로 설정하여 Pod IP를 대상으로 함)
-resource "aws_lb_target_group" "example_tg" {
+resource "aws_lb_target_group" "mokonix_lee_tg" {
   name     = "mokonix-lee-tg"
   port     = 80
   protocol = "HTTP"
@@ -100,19 +100,27 @@ resource "aws_lb_target_group" "example_tg" {
     port     = "traffic-port"
   }
 
+  lifecycle {
+    prevent_destroy = false
+  }
+
+  depends_on = [
+    aws_lb_listener.mokonix_lee_listener  # Listener가 먼저 삭제되도록 의존성 설정
+  ]
+
   tags = {
     Name = "mokonix-lee-tg"
   }
 }
 
 # ALB Listener 생성 (Kubernetes가 ALB의 타겟 그룹을 자동으로 관리함)
-resource "aws_lb_listener" "example_listener" {
-  load_balancer_arn = aws_lb.example_alb.arn  # 위에서 생성한 ALB의 ARN
+resource "aws_lb_listener" "mokonix_lee_listener" {
+  load_balancer_arn = aws_lb.mokonix_lee_alb.arn  # 위에서 생성한 ALB의 ARN
   port              = 80  # ALB의 HTTP 포트
   protocol          = "HTTP"
   default_action {
     type = "forward"
-    target_group_arn = aws_lb_target_group.example_tg.arn
+    target_group_arn = aws_lb_target_group.mokonix_lee_tg.arn
   }
 
   lifecycle {
